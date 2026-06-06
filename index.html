@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسابقة المعرفة الإسلامية</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#c9a84c;--gold-light:#f0d080;--gold-dark:#8a6820;
+    --navy:#0a0e2a;--navy-mid:#131840;--navy-light:#1e2560;
+    --emerald:#0d5c3a;--emerald-light:#1a8a58;
+    --crimson:#8b1a1a;--silver:#c0c8d8;--cream:#f5f0e8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--navy);color:var(--cream);font-family:'Amiri',serif;min-height:100vh;overflow-x:hidden;direction:rtl;
+    background-image:radial-gradient(ellipse at 20% 20%,rgba(201,168,76,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(13,92,58,.1) 0%,transparent 50%),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(201,168,76,.03) 60px,rgba(201,168,76,.03) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(201,168,76,.03) 60px,rgba(201,168,76,.03) 61px);}
+  header{text-align:center;padding:2rem 1rem 1rem;border-bottom:2px solid var(--gold-dark);background:linear-gradient(180deg,rgba(201,168,76,.15) 0%,transparent 100%);}
+  .basmala{font-family:'Scheherazade New',serif;font-size:1.5rem;color:var(--gold);margin-bottom:.6rem;}
+  header h1{font-family:'Scheherazade New',serif;font-size:clamp(1.6rem,5vw,3rem);color:var(--gold-light);text-shadow:0 0 30px rgba(201,168,76,.5),0 2px 4px rgba(0,0,0,.8);line-height:1.4;}
+  header p{color:var(--silver);font-size:1rem;margin-top:.4rem;}
+  #scoreboard{display:flex;justify-content:center;gap:1.5rem;padding:1rem;flex-wrap:wrap;}
+  .team-score{text-align:center;background:rgba(201,168,76,.08);border:1px solid var(--gold-dark);padding:.6rem 1.2rem;border-radius:4px;min-width:110px;max-width:180px;}
+  .team-name{font-size:.9rem;color:var(--gold);word-break:break-word;line-height:1.3;}
+  .team-points{font-size:1.8rem;font-weight:700;color:var(--gold-light);text-shadow:0 0 10px rgba(201,168,76,.4);}
+  #board-container{padding:1rem;max-width:1300px;margin:0 auto;}
+  #board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;}
+  .category-header{background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy-mid) 100%);border:2px solid var(--gold-dark);padding:.7rem .3rem;text-align:center;font-family:'Scheherazade New',serif;font-size:clamp(.72rem,1.2vw,.95rem);font-weight:700;color:var(--gold-light);line-height:1.5;min-height:80px;display:flex;align-items:center;justify-content:center;}
+  .card{background:linear-gradient(160deg,var(--navy-light) 0%,var(--navy-mid) 100%);border:2px solid var(--gold-dark);padding:1rem .4rem;text-align:center;font-family:'Scheherazade New',serif;font-size:clamp(1rem,1.8vw,1.5rem);font-weight:700;color:var(--gold-light);cursor:pointer;min-height:72px;display:flex;align-items:center;justify-content:center;transition:all .2s ease;text-shadow:0 1px 3px rgba(0,0,0,.5);position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.1) 0%,transparent 60%);opacity:0;transition:opacity .2s;}
+  .card:hover:not(.used)::before{opacity:1;}
+  .card:hover:not(.used){border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 20px rgba(201,168,76,.3);}
+  .card.used{background:rgba(10,14,42,.6);border-color:rgba(138,104,32,.3);color:rgba(201,168,76,.15);cursor:default;}
+  #modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:1rem;}
+  #modal-overlay.active{display:flex;}
+  #modal{background:linear-gradient(160deg,var(--navy-mid) 0%,var(--navy) 100%);border:2px solid var(--gold);border-radius:6px;max-width:720px;width:100%;padding:2rem;box-shadow:0 0 60px rgba(201,168,76,.2);animation:modalIn .3s ease;direction:rtl;max-height:90vh;overflow-y:auto;}
+  @keyframes modalIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
+  #modal-points{font-family:'Scheherazade New',serif;font-size:2.2rem;color:var(--gold-light);text-align:center;margin-bottom:.5rem;text-shadow:0 0 20px rgba(201,168,76,.5);}
+  #modal-category{font-family:'Scheherazade New',serif;font-size:.95rem;color:var(--gold);text-align:center;margin-bottom:1rem;}
+  #modal-question{font-family:'Scheherazade New',serif;font-size:1.2rem;line-height:2.2;color:var(--cream);text-align:center;margin-bottom:1.2rem;}
+  #modal-answer-area{display:none;background:rgba(13,92,58,.2);border:1px solid var(--emerald-light);border-radius:4px;padding:1rem;margin-bottom:1.2rem;}
+  #modal-answer-area.show{display:block;}
+  #modal-answer-label{font-size:.85rem;color:var(--emerald-light);margin-bottom:.5rem;text-align:center;}
+  #modal-answer{font-family:'Scheherazade New',serif;font-size:1.05rem;color:var(--cream);line-height:2.1;text-align:right;}
+  .modal-buttons{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
+  .btn{font-family:'Amiri',serif;font-size:1rem;border:none;border-radius:3px;padding:.65rem 1.3rem;cursor:pointer;transition:all .2s;font-weight:700;}
+  .btn-reveal{background:var(--navy-light);border:1px solid var(--gold-dark);color:var(--gold-light);}
+  .btn-reveal:hover{border-color:var(--gold);background:rgba(201,168,76,.15);}
+  .btn-correct{background:var(--emerald);border:1px solid var(--emerald-light);color:#a0ffcc;}
+  .btn-correct:hover{background:var(--emerald-light);}
+  .btn-wrong{background:var(--crimson);border:1px solid #c44;color:#ffaaaa;}
+  .btn-wrong:hover{background:#a02020;}
+  .btn-close{background:transparent;border:1px solid var(--silver);color:var(--silver);}
+  .btn-close:hover{border-color:var(--cream);color:var(--cream);}
+  #team-selector{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;font-size:1rem;color:var(--silver);align-items:center;}
+  .team-btn{font-family:'Amiri',serif;font-size:.95rem;padding:.35rem .9rem;border-radius:3px;border:1px solid var(--gold-dark);background:transparent;color:var(--gold);cursor:pointer;transition:all .2s;}
+  .team-btn:hover,.team-btn.selected{background:rgba(201,168,76,.2);border-color:var(--gold);}
+  #setup{display:flex;flex-direction:column;align-items:center;gap:1.2rem;padding:2.5rem 2rem;max-width:600px;margin:2.5rem auto;background:rgba(201,168,76,.05);border:1px solid var(--gold-dark);border-radius:6px;}
+  #setup h2{font-family:'Scheherazade New',serif;color:var(--gold-light);font-size:1.8rem;text-align:center;}
+  #setup p{color:var(--silver);font-size:1rem;text-align:center;line-height:1.8;}
+  .teams-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%;}
+  .team-field{display:flex;flex-direction:column;gap:.3rem;}
+  .team-field label{font-family:'Amiri',serif;font-size:.85rem;color:var(--gold);}
+  .team-field input{background:rgba(255,255,255,.07);border:1px solid var(--gold-dark);color:var(--cream);padding:.65rem 1rem;font-family:'Scheherazade New',serif;font-size:1.05rem;border-radius:3px;outline:none;text-align:right;direction:rtl;width:100%;}
+  .team-field input:focus{border-color:var(--gold);background:rgba(255,255,255,.1);}
+  .btn-start{background:linear-gradient(135deg,var(--gold-dark) 0%,var(--gold) 100%);border:none;color:var(--navy);font-family:'Scheherazade New',serif;font-size:1.3rem;padding:.9rem 3rem;cursor:pointer;border-radius:3px;transition:all .2s;font-weight:700;margin-top:.4rem;}
+  .btn-start:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(201,168,76,.4);}
+  #game-area{display:none;}
+  .ornament{text-align:center;color:var(--gold-dark);font-size:1rem;padding:.5rem;letter-spacing:8px;}
+  footer{text-align:center;padding:1.5rem;color:rgba(201,168,76,.35);font-size:.9rem;line-height:1.8;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="basmala">✦ بسم الله الرحمن الرحيم ✦</div>
+  <h1>مسابقة المعرفة الإسلامية</h1>
+  <p>الصلاة · العقيدة · الغلاة وفرقهم · أكمل الآية · الإمام علي عليه السلام · منوعات</p>
+</header>
+
+<div id="setup">
+  <h2>إعداد الفرق</h2>
+  <p>أدخل أسماء الفرق المشاركة</p>
+  <div class="teams-grid">
+    <div class="team-field"><label>الفريق الأول</label><input id="t1" type="text" value="فريق الكافي" placeholder="فريق الكافي"></div>
+    <div class="team-field"><label>الفريق الثاني</label><input id="t2" type="text" value="فريق البحار" placeholder="فريق البحار"></div>
+    <div class="team-field"><label>الفريق الثالث (اختياري)</label><input id="t3" type="text" placeholder=""></div>
+    <div class="team-field"><label>الفريق الرابع (اختياري)</label><input id="t4" type="text" placeholder=""></div>
+  </div>
+  <button class="btn-start" onclick="startGame()">✦ ابدأ اللعبة ✦</button>
+</div>
+
+<div id="game-area">
+  <div id="scoreboard"></div>
+  <div class="ornament">✦ ✦ ✦</div>
+  <div id="board-container"><div id="board"></div></div>
+  <div class="ornament">✦ ✦ ✦</div>
+</div>
+
+<footer>الكافي · بحار الأنوار · وسائل الشيعة · تفسير الإمام العسكري عليه السلام · كتاب الغيبة · علل الشرائع · بصائر الدرجات · نهج البلاغة · الاحتجاج · أمالي الطوسي</footer>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <div id="modal-points"></div>
+    <div id="modal-category"></div>
+    <div id="modal-question"></div>
+    <div id="modal-answer-area">
+      <div id="modal-answer-label">✦ الجواب ✦</div>
+      <div id="modal-answer"></div>
+    </div>
+    <div id="team-selector"></div>
+    <div class="modal-buttons" id="modal-buttons"></div>
+  </div>
+</div>
+
+<script>
+var categories = [
+
+  {
+    name: "الصلاة والوضوء",
+    questions: [
+      {
+        q: "«سألت أبا عبد الله عليه السلام عن علة الصلاة فان فيها مشغلة للناس عن حوائجهم ومتعبة لهم في أبدانهم. ما هو جواب الإمام؟»",
+        a: "«قال فيها علل وذلك أن الناس لو تركوا بغير تنبيه ولا تذكر للنبي صلى الله عليه وآله بأكثر من الخبر الأول وبقاء الكتاب في أيديهم فقط لكانوا على ما كان عليه الأولون... وأراد الله تبارك وتعالى أن لا ينسيهم أمر محمد صلى الله عليه وآله ففرض عليهم الصلاة يذكرونه في كل يوم خمس مرات ينادون باسمه وتعبدوا بالصلاة وذكر الله لكيلا يغفلوا عنه وينسوه فيندرس ذكره.» — علل الشرائع، الشيخ الصدوق."
+      },
+      {
+        q: "«اذكر آية الوضوء كاملة»",
+        a: "«يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ وَأَيْدِيَكُمْ إِلَى الْمَرَافِقِ وَامْسَحُوا بِرُءُوسِكُمْ وَأَرْجُلَكُمْ إِلَى الْكَعْبَيْنِ» — سورة المائدة: ٦."
+      },
+      {
+        q: "ما أعظم طهور الصلاة الذي لا تُقبل الصلاة بدونه؟",
+        a: "قال رسول الله صلاة الله عليه و اله: «مفتاح الصلاة الطهور، وتحريمها التكبير، وتحليلها التسليم، ولا يقبل الله صلاة بغير طهور، ولا صدقة من غلول.» وإن أعظم طهور الصلاة موالاة محمد وأنه سيد المرسلين، وموالاة علي وأنه سيد الوصيين، وموالاة أوليائهما ومعاداة أعدائهما. — تفسير الإمام العسكري عليه السلام، ص٥٢١."
+      },
+      {
+        q: "كم عدد التكبيرات في التوجه في الصلاة؟",
+        a: "عن الرضا عليه السلام: «إنما صارت التكبيرات في أول الصلاة سبعاً لأن أصل الصلاة ركعتان واستفتاحهما بسبع تكبيرات: تكبيرة الافتتاح، وتكبيرة الركوع، وتكبيرتا السجدتين في الأولى، وتكبيرة الركوع في الثانية وتكبيرتا سجدتيها. فإذا كبّر الإنسان في أول صلاته سبع تكبيرات ثم نسي شيئاً من تكبيرات الافتتاح لم يدخل عليه نقص في صلاته.» — من لا يحضره الفقيه."
+      },
+      {
+        q: "«قال رسول الله صلاة الله عليه و اله: الصلاة مكتوبة في أربعة أسهم. ما هم؟»",
+        a: "«تُكتب الصلاة على أربعة أسهم: سهم منها إسباغ الوضوء، وسهم منها الركوع، وسهم منها السجود، وسهم منها الخشوع. قيل: يا رسول الله وما الخشوع؟ قال: التواضع في الصلاة وأن يقبل العبد بقلبه كله على ربه عز وجل.» — مستدرك الوسائل، ج١."
+      }
+    ]
+  },
+
+  {
+    name: "العقيدة والتوحيد",
+    questions: [
+      {
+        q: "سأل جابر بن عبد الله رسول الله صلاة الله عليه و اله: ما أول شيء خلقه الله؟ فما أجاب؟",
+        a: "«قال: نور نبيّك يا جابر، خلقه الله ثم خلق منه كل خير.» — بحار الأنوار، ج١٥، ص٢٤."
+      },
+      {
+        q: "«أول الدين معرفته، وكمال معرفته التصديق به، وكمال التصديق توحيده، وكمال توحيده الإخلاص له.» أكمل الحديث. — نهج البلاغة، الخطبة الأولى.",
+        a: "«وكمال الإخلاص نفي الصفات عنه — لشهادة كل صفة أنها غير الموصوف، وشهادة كل موصوف أنه غير الصفة.»"
+      },
+      {
+        q: "أُعطي سليمان بن داود عليه السلام عدداً من حروف الاسم الأعظم — فبه تمكّن من كل ما تمكّن منه. كم حرفاً أُعطي سليمان؟ وكم أُعطي الإمام الذي بيننا وبين الله؟ وما الآية الدالة على ذلك؟",
+        a: "«أُعطي سليمان حرفاً واحداً من الاسم الأعظم، وأُعطي الإمام اثنين وسبعين حرفاً.» والآية: «قُلْ كَفَىٰ بِاللَّهِ شَهِيدًا بَيْنِي وَبَيْنَكُمْ وَمَنْ عِندَهُ عِلْمُ الْكِتَابِ» [الرعد: ٤٣] — وعلم الكتاب كله عند علي عليه السلام. — بصائر الدرجات، ص٢١٢."
+      },
+      {
+        q: "في خطبة عن الامام الرضا قال أسماؤه تعالى ___، وأفعاله سبحانه ___.» — كتاب الأمالي، الكتاب ٣٠، الباب ٤",
+        a: "«  أسماؤه تعالى تعبير، وأفعاله سبحانه تفهيم.» — كتاب الأمالي، الكتاب ٣٠، الباب ٤."
+      },
+      {
+        q: "ما قول الإمام الرضا عليه السلام في المشيئة والإرادة عند الله؟",
+        a: "«المشيئة والإرادة من صفات الأفعال لا من صفات الذات، فمن زعم أن الله لم يزل مريداً شائياً فليس بموحد.» — كتاب التوحيد، باب ٥٥."
+      }
+    ]
+  },
+
+  {
+    name: "الغلاة وفرقهم",
+    questions: [
+      {
+        q: "قال الإمام الصادق عليه السلام: إن الغلاة ... خلق الله.",
+        a: "«(شر خلق الله) والله إن الغلاة لشر من اليهود والنصارى والمجوس والذين أشركوا — يصغّرون عظمة الله ويدّعون الربوبية لعباد الله.» ثم قال: «إلينا يرجع الغالي فلا نقبله، وبنا يلحق المقصّر فنقبله.» — بحار الأنوار، ج٢٥، ص٢٦٥."
+      },
+      {
+        q: "العقيدة النصيرية مبنية على سر ثلاثة حروف: ع م س. ع = علي المعنى (الإله)، م = محمد الحجاب. ما الذي يمثّله حرف س؟ من هو؟ وما لقبه عندهم؟",
+        a: "س = سلمان الفارسي — لقبه عندهم الباب. وشهادتهم الكاملة: «أشهد بأن ليس إلهاً إلا علي بن أبي طالب المعبود، ولا حجاب إلا السيد محمد المحمود، ولا باب إلا السيد سلمان الفارسي المقصود.» وهذا الإسناد يُرفع في مصادرهم إلى الخصيبي عن شيخه الجنان عن محمد بن نصير."
+      },
+      {
+        q: "ما أشهر ثلاث فرق من الغلاة؟",
+        a: "المغيرية: تنتسب إلى المغيرة بن سعيد — زعم ألوهية الإمام الباقر عليه السلام. الخطّابية: تنتسب إلى أبي الخطاب — ادّعى نبوّة الإمام الصادق ثم نبوّة نفسه. النُّصيرية: تنتسب إلى محمد بن نُصير النُّمَيري — ادّعى ألوهية الإمام العسكري عليه السلام وتبرّأ منه الإمام صراحةً."
+      },
+      {
+        q: "اذكر أربعًا من معتقدات الغلاة.",
+        a: "تأليه الأئمة عليهم السلام — القول بسقوط التكاليف الشرعية بعد المعرفة (ترك الصلاة والزكاة والصيام والحج) — القول بتناسخ الأرواح — إباحة الزنا والسرقة وشرب الخمر. وقالوا: إن الفرائض رجال وإن المحرمات رجال، فمن عرف هؤلاء الرجال سقطت عنه الأعمال."
+      },
+      {
+        q: "نسب القول للشيخ الصدوق: «المفوّضة لعنهم الله قد أضافوا إلى الأذان عبارتين». ما هما؟",
+        a: "«محمد وآل محمد خير البرية» و«أشهد أن علياً ولي الله» — وهذا غلوّ في الأذان لا أصل له في سنّة أهل البيت عليهم السلام."
+      }
+    ]
+  },
+
+  {
+    name: "أكمل الآية",
+    questions: [
+      {
+        q: "الزخرف ٤: «وَإِنَّهُ فِي أُمِّ الْكِتَابِ...»",
+        a: "«...لَدَيْنَا لَعَلِيٌّ حَكِيمٌ»"
+      },
+      {
+        q: "الرعد ٧: «وَيَقُولُ الَّذِينَ كَفَرُوا لَوْلَا أُنزِلَ عَلَيْهِ آيَةٌ مِّن رَّبِّهِ ۗ إِنَّمَا أَنتَ مُنذِرٌ...»",
+        a: "«...وَلِكُلِّ قَوْمٍ هَادٍ»"
+      },
+      {
+        q: "يس ١٢: «إِنَّا نَحْنُ نُحْيِي الْمَوْتَىٰ وَنَكْتُبُ مَا قَدَّمُوا وَآثَارَهُمْ وَكُلَّ شَيْءٍ...»",
+        a: "«...أَحْصَيْنَاهُ فِي إِمَامٍ مُّبِينٍ»"
+      },
+      {
+        q: "البقرة ١٢٤: «وَإِذِ ابْتَلَىٰ إِبْرَاهِيمَ رَبُّهُ بِكَلِمَاتٍ فَأَتَمَّهُنَّ ۖ قَالَ...» وأكمل ما بعدها حتى «لَا يَنَالُ عَهْدِي الظَّالِمِينَ»",
+        a: "«...إِنِّي جَاعِلُكَ لِلنَّاسِ إِمَامًا ۖ قَالَ وَمِن ذُرِّيَّتِي ۖ قَالَ لَا يَنَالُ عَهْدِي الظَّالِمِينَ»"
+      },
+      {
+        q: "الأحزاب ٥٦: «إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ...» أكمل الآية واذكر الآية التي تليها مباشرة.",
+        a: "«...يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا» [٥٦]. ثم: «إِنَّ الَّذِينَ يُؤْذُونَ اللَّهَ وَرَسُولَهُ لَعَنَهُمُ اللَّهُ فِي الدُّنْيَا وَالْآخِرَةِ وَأَعَدَّ لَهُمْ عَذَابًا مُّهِينًا» [٥٧]"
+      }
+    ]
+  },
+
+  {
+    name: "الإمام علي عليه السلام",
+    questions: [
+      {
+        q: "حين وُلد الإمام علي عليه السلام، أيّ سورة تلا النبي صلاة الله عليه و اله؟ وماذا قال له؟",
+        a: "تلا النبي صلاة الله عليه و اله سورة المؤمنون من أولها: «إِنَّ الْمُؤْمِنِينَ قَدْ أَفْلَحُوا» [٢٣:١]. ثم قال: «قد أفلحوا بك.» وتلا حتى بلغ: «أُولَٰئِكَ هُمُ الْوَارِثُونَ» [٢٣:١٠] ثم قال: «والله أنت قائدهم وأنت تزوّدهم علماً وأنت هاديهم وبك يهتدون.» — أمالي الطوسي، ص٧٠٦."
+      },
+      {
+        q: "قال رسول الله صلاة الله عليه و اله في خطبة الغدير: «معاشر الناس، تدبّروا القرآن، وافهموا آياته، وانظروا إلى محكماته، ولا تتّبعوا متشابهه، فوالله لن يبيّن لكم زواجره، ولا يوضح لكم ________ إلا الذي أنا آخذٌ بيده ومصعده إليّ وشائلٌ بعضده.» ما الكلمة المحذوفة؟ ومن يعنيه النبي؟",
+        a: "الكلمة المحذوفة: «تفسيره». والمعنيّ: علي بن أبي طالب عليه السلام — «ومعلّمكم أن من كنت مولاه فهذا علي مولاه، وهو علي بن أبي طالب أخي ووصيّي، وموالاته من الله عز وجل أنزلها عليّ.» — خطبة الغدير؛ وسائل الشيعة، ج١٦، ص١٧٧."
+      },
+      {
+        q: "في يوم الغدير نزلت آية. ما هي؟ وما الذي قاله النبي صلاة الله عليه و اله حين نزلت؟",
+        a: "نزلت: «الْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ وَأَتْمَمْتُ عَلَيْكُمْ نِعْمَتِي وَرَضِيتُ لَكُمُ الْإِسْلَامَ دِينًا» [المائدة: ٣]. فقال النبي صلاة الله عليه و اله: «الله أكبر على إكمال الدين وإتمام النعمة ورضا الرب برسالتي وبالولاية لعلي من بعدي.» — بحار الأنوار، ج٣٧؛ تفسير العياشي."
+      },
+      {
+        q: "لمّا جمع النبي صلاة الله عليه و اله بني عبد المطلب وسألهم: «فأيكم يؤمن بي ويؤازرني على أمري فيكون أخي ووصيي وخليفتي من بعدي؟» — ما الآية التي أوجبت عليه هذا الاجتماع؟",
+        a: "«وَأَنذِرْ عَشِيرَتَكَ الْأَقْرَبِينَ» [الشعراء: ٢١٤]. فلم يجب أحد إلا علي عليه السلام وكان أصغرهم سناً، فقال: «أنا يا رسول الله.» فقال النبي: «أنت أخي ووصيي وخليفتي فيهم من بعدي.» — تاريخ الطبري؛ البرهان في تفسير القرآن."
+      },
+      {
+        q: "أيّ سورة في القرآن تتحدث عن إحدى أعظم انتصارات الإمام علي عليه السلام العسكرية؟ وما اسم تلك الغزوة؟",
+        a: "سورة العاديات — نزلت في غزوة ذات السلاسل. قال الإمام الباقر عليه السلام: «بعث رسول الله صلاة الله عليه و اله جيشاً إلى ذات السلاسل فانهزموا ورجعوا، فبعث علياً عليه السلام فأتاهم في الجبال فأغار عليهم عند الصبح وهم غارّون فهزمهم الله، فأنزل الله: وَالْعَادِيَاتِ ضَبْحًا — يعني الخيل التي أغار بها علي عليه السلام.» — تفسير العياشي؛ بحار الأنوار، ج٢١."
+      }
+    ]
+  },
+
+  {
+    name: "منوعات",
+    questions: [
+      {
+        q: "ما سنة بداية الغيبة الكبرى للإمام المهدي عجّل الله فرجه؟ وبوفاة من بدأت؟",
+        a: "بدأت سنة ٣٢٩ هجرية بوفاة علي بن محمد السمري — السفير الرابع والأخير. ومنذ ذلك اليوم لم يُنصَّب للإمام سفيرٌ وانتهت النيابة الخاصة. — الغيبة، الشيخ الطوسي."
+      },
+      {
+        q: "كيف يُعرف الفقيه الحقيقي من شيعة أهل البيت؟",
+        a: "قال الإمام الصادق عليه السلام: «اعرفوا منازل شيعتنا بقدر ما يُحسنون من رواياتهم عنّا، فإنا لا نعدّ الفقيه منهم فقيهاً حتى يكون مُحدَّثاً.» قيل: أيكون المؤمن محدَّثاً؟ قال: «يكون مُفهَّماً، والمُفهَّم هو المُحدَّث.» — وسائل الشيعة، ج٢٨، ص١٤٩."
+      },
+      {
+        q: "ما أقدم كتاب حديث شيعي؟ وماذا قال الإمام الصادق عليه السلام في حقه؟",
+        a: "كتاب سليم بن قيس الهلالي — وهو أبجد الشيعة. قال الإمام الصادق عليه السلام: «من لم يكن عنده من شيعتنا ومحبينا كتاب سليم بن قيس الهلالي فليس عنده من أمرنا شيء، ولا يعلم من أسبابنا شيئاً، وهو سرٌّ من أسرار آل محمد.» — كتاب سليم بن قيس."
+      },
+      {
+        q: "ما علة فرض الصيام كما جاءت في حديث النبي صلاة الله عليه و اله؟ وما الآية التي استشهد بها؟",
+        a: "«قال النبي صلاة الله عليه و اله: إن آدم أكل من الشجرة فبقي الطعام في جوفه ثلاثين يوماً، فأوجب الله على ذريّته صيام ثلاثين يوماً تطهيراً من ذلك الفعل.» والآية: «كُتِبَ عَلَيْكُمُ الصِّيَامُ كَمَا كُتِبَ عَلَى الَّذِينَ مِن قَبْلِكُمْ لَعَلَّكُمْ تَتَّقُونَ» [٢:١٨٣]. — علل الشرائع."
+      },
+      {
+        q: "أمر النبي صلاة الله عليه و اله ثلاثة من أصحابه بأن يأتوا علياً عليه السلام بشعورهم محلوقة علامةً على الوفاء. من هم؟",
+        a: "سلمان الفارسي، وأبو ذر الغفاري، والمقداد بن الأسود. قال النبي صلاة الله عليه و اله: «علي وثلاثة معه — هو إمامهم ودليلهم وهاديهم، لا ينثنون ولا يضلون: سلمان وأبو ذر والمقداد.» — كتاب سليم بن قيس الهلالي."
+      }
+    ]
+  }
+
+];
+var POINTS=[200,400,600,800,1000];
+function toAr(n){return String(n).replace(/[0-9]/g,function(d){return'\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669'[parseInt(d)];});}
+var teams=[],scores=[],currentCard=null,selectedTeam=null;
+
+function startGame(){
+  var inputs=['t1','t2','t3','t4'].map(function(id){return document.getElementById(id).value.trim();}).filter(function(v){return v.length>0;});
+  if(inputs.length<2){alert('\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0633\u0645\u064e\u064a \u0641\u0631\u064a\u0642\u064e\u064a\u0646 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644.');return;}
+  teams=inputs;scores=teams.map(function(){return 0;});
+  document.getElementById('setup').style.display='none';
+  document.getElementById('game-area').style.display='block';
+  buildScoreboard();buildBoard();
+}
+function buildScoreboard(){
+  document.getElementById('scoreboard').innerHTML=teams.map(function(t,i){
+    return '<div class="team-score"><div class="team-name">'+t+'</div><div class="team-points" id="pts-'+i+'">'+toAr(0)+'</div></div>';
+  }).join('');
+}
+function updateScoreboard(){teams.forEach(function(t,i){var el=document.getElementById('pts-'+i);if(el)el.textContent=toAr(scores[i]);});}
+function buildBoard(){
+  var board=document.getElementById('board');board.innerHTML='';
+  categories.forEach(function(cat){var h=document.createElement('div');h.className='category-header';h.textContent=cat.name;board.appendChild(h);});
+  POINTS.forEach(function(pts,row){
+    categories.forEach(function(cat,col){
+      var card=document.createElement('div');card.className='card';card.id='card-'+col+'-'+row;card.textContent=toAr(pts);
+      card.onclick=(function(c,r,p,n,q){return function(){openCard(c,r,p,n,q);};})(col,row,pts,cat.name,cat.questions[row]);
+      board.appendChild(card);
+    });
+  });
+}
+function openCard(col,row,pts,catName,qData){
+  var card=document.getElementById('card-'+col+'-'+row);
+  if(card.classList.contains('used'))return;
+  currentCard={col:col,row:row,pts:pts};selectedTeam=null;
+  document.getElementById('modal-points').textContent=toAr(pts)+' \u0646\u0642\u0637\u0629';
+  document.getElementById('modal-category').textContent='\u2736 '+catName+' \u2736';
+  document.getElementById('modal-question').textContent=qData.q;
+  document.getElementById('modal-answer').textContent=qData.a;
+  document.getElementById('modal-answer-area').classList.remove('show');
+  document.getElementById('team-selector').innerHTML='<span>\u0627\u0645\u0646\u062d \u0644\u0640:</span> '+
+    teams.map(function(t,i){return '<button class="team-btn" id="tbtn-'+i+'" onclick="selectTeam('+i+')">'+t+'</button>';}).join('');
+  document.getElementById('modal-buttons').innerHTML=
+    '<button class="btn btn-reveal" onclick="revealAnswer()">\u0627\u0643\u0634\u0641 \u0627\u0644\u062c\u0648\u0627\u0628</button>'+
+    '<button class="btn btn-close" onclick="closeModal(false)">\u062a\u062e\u0637\u0651</button>';
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function selectTeam(i){
+  selectedTeam=i;
+  document.querySelectorAll('.team-btn').forEach(function(b){b.classList.remove('selected');});
+  var btn=document.getElementById('tbtn-'+i);if(btn)btn.classList.add('selected');
+}
+function revealAnswer(){
+  document.getElementById('modal-answer-area').classList.add('show');
+  document.getElementById('modal-buttons').innerHTML=
+    '<button class="btn btn-correct" onclick="awardPoints(true)">\u2713 \u0635\u062d\u064a\u062d</button>'+
+    '<button class="btn btn-wrong" onclick="awardPoints(false)">\u2717 \u062e\u0637\u0623</button>'+
+    '<button class="btn btn-close" onclick="closeModal(false)">\u0628\u0644\u0627 \u0646\u0642\u0627\u0637</button>';
+}
+function awardPoints(correct){
+  if(selectedTeam===null){alert('\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0641\u0631\u064a\u0642 \u0623\u0648\u0644\u0627\u064b!');return;}
+  scores[selectedTeam]+=correct?currentCard.pts:0;
+  updateScoreboard();closeModal(true);
+}
+function closeModal(markUsed){
+  if(markUsed&&currentCard){
+    var card=document.getElementById('card-'+currentCard.col+'-'+currentCard.row);
+    card.classList.add('used');card.textContent='';
+  }
+  document.getElementById('modal-overlay').classList.remove('active');currentCard=null;
+}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal(false);});
+</script>
+</body>
+</html>
